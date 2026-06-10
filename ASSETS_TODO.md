@@ -1,11 +1,14 @@
 # ASSETS TODO — génération IA & audio
 
-Le jeu est **100% jouable sans ces assets** (décors procéduraux Canvas, sprites Canvas,
-synthèse WebAudio). Cette liste sert à produire la version « premium ».
+**Depuis la v1.1, décors IA et musique sont intégrés gratuitement et sans clé** :
+décors via Pollinations.ai (défaut), musique via radios YouTube 24/7. Le jeu est aussi
+100% jouable sans réseau (décors procéduraux Canvas, synthèse WebAudio). Cette liste
+sert à produire des assets dédiés « premium » si souhaité.
 
-## 1. Décors IA (générés à la volée si token HF, sinon à pré-générer)
+## 1. Décors IA (générés à la volée — Pollinations par défaut, HF en option)
 
-Modèle : `nerijs/pixel-art-xl` · API : Hugging Face Inference (gratuit, ~30 req/min).
+Pollinations : `https://image.pollinations.ai/prompt/<prompt>?width=512&height=288&seed=<n>&nologo=true&model=flux`
+(gratuit, sans clé). Option : Hugging Face `nerijs/pixel-art-xl` avec token gratuit.
 Les prompts exacts sont dans `src/ai/promptLibrary.ts` (`BACKGROUND_PROMPTS`). 26 décors :
 
 | Clé | Usage |
@@ -39,7 +42,12 @@ claire, enzo. Pour chaque PNJ, prévoir 6 expressions (neutral, happy, sad, angr
 thoughtful) en ajoutant `, <expression> expression` au prompt. Format : PNG fond transparent,
 ~96×128, upscale nearest-neighbor.
 
-## 3. Audio — 20 musiques (`public/audio/<nom>.mp3`)
+## 3. Audio — 20 musiques (`public/audio/<nom>.mp3`, optionnel)
+
+> Par défaut la musique vient des radios YouTube (aucun fichier requis) :
+> lofi `jfKfPfyJRdk` · chillhop `5yx6BWlEVcY` · synthwave `4xDzrJKXOOY` ·
+> dark ambient `S_MOd40zlYU` — mapping piste→ambiance dans `src/audio/tracks.ts`.
+> Les MP3 ci-dessous ne servent que si la source « Fichiers locaux » est choisie.
 
 title · sms_notification · mission_locale · caserne_approach · incorporation · fmi_day ·
 fmi_night · bivouac · doubt_crisis · protocol_learning · marche_calot · ceremony · formation ·

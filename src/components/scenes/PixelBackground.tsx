@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { generateBackground, getHfToken } from '../../ai/imageGenerator';
+import { generateBackground, aiEnabled } from '../../ai/imageGenerator';
 
 // Décors procéduraux pixel art (fallback sans token Hugging Face).
 // Chaque scène est dessinée en 160×90 puis upscalée en CSS (pixelated).
@@ -177,7 +177,7 @@ export function PixelBackground({ backgroundKey }: Props) {
 
   useEffect(() => {
     setAiUrl(null);
-    if (getHfToken()) {
+    if (aiEnabled()) {
       let alive = true;
       void generateBackground(backgroundKey).then((url) => {
         if (alive && url) setAiUrl(url);

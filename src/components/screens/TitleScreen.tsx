@@ -4,18 +4,25 @@ import { useAudioStore } from '../../stores/audioStore';
 import { PixelButton } from '../ui/PixelButton';
 import { PixelBackground } from '../scenes/PixelBackground';
 import { RainEffect } from '../effects/RainEffect';
-import { getHfToken, setHfToken, clearHfToken } from '../../ai/imageGenerator';
+import { getAiProvider, setAiProvider, getHfToken, setHfToken, clearHfToken, type AiProvider } from '../../ai/imageGenerator';
+import { audio, type MusicSource } from '../../audio/audioManager';
 
 export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
   const store = useGameStore();
   const audioStore = useAudioStore();
   const [warningAccepted, setWarningAccepted] = useState(false);
-  const [tokenOpen, setTokenOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [tokenInput, setTokenInput] = useState('');
+  const [aiProvider, setAiProviderState] = useState<AiProvider>(getAiProvider());
 
   useEffect(() => {
     void store.checkHasSave();
   }, []);
+
+  const chooseProvider = (p: AiProvider) => {
+    setAiProvider(p);
+    setAiProviderState(p);
+  };
 
   if (!warningAccepted) {
     return (
@@ -34,7 +41,14 @@ export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
               www.le-smv.gouv.fr
             </a>
           </p>
-          <PixelButton variant="primary" className="font-title text-xs px-6 py-3" onClick={() => setWarningAccepted(true)}>
+          <PixelButton
+            variant="primary"
+            className="font-title text-xs px-6 py-3"
+            onClick={() => {
+              setWarningAccepted(true);
+              audio.playMusic('title'); // geste utilisateur → autoplay autorisé
+            }}
+          >
             COMMENCER L'AVENTURE
           </PixelButton>
         </div>
@@ -62,8 +76,8 @@ export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
               CONTINUER
             </PixelButton>
           )}
-          <PixelButton className="text-[10px] py-2 text-center" onClick={() => setTokenOpen(true)}>
-            🎨 ASSETS IA {getHfToken() ? '(actif)' : '(off)'}
+          <PixelButton className="text-[10px] py-2 text-center" onClick={() => setSettingsOpen(true)}>
+            ⚙️ DÉCORS & MUSIQUE
           </PixelButton>
           <PixelButton className="text-[10px] py-2 text-center" onClick={audioStore.toggleMute}>
             {audioStore.muted ? '🔇 SON COUPÉ' : '🔊 SON ACTIF'}
@@ -76,39 +90,84 @@ export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
         )}
       </div>
 
-      {tokenOpen && (
+      {settingsOpen && (
         <div className="absolute inset-0 z-40 bg-pixel-shadow/85 flex items-center justify-center p-4">
-          <div className="pixel-panel max-w-md p-5">
-            <h3 className="font-title text-xs mb-3 text-accent-gold">GÉNÉRATION IA (OPTIONNELLE)</h3>
-            <p className="text-sm mb-3 opacity-80">
-              Avec un token Hugging Face (gratuit), les décors sont générés en pixel art par IA et mis en
-              cache. Sans token, le jeu utilise ses décors intégrés — il est 100% jouable.
+          <div className="pixel-panel max-w-md w-full p-5 max-h-[90vh] overflow-y-auto">
+            <h3 className="font-title text-xs mb-3 text-accent-gold">DÉCORS PIXEL ART (IA)</h3>
+            <p className="text-sm mb-2 opacity-80">
+              Les décors peuvent être générés par IA et mis en cache. Par défaut :{' '}
+              <strong>Pollinations</strong>, 100% gratuit, sans compte ni clé. En cas de panne ou
+              hors-ligne, le jeu retombe sur ses décors intégrés.
             </p>
-            <input
-              className="w-full bg-pixel-shadow border-2 border-ui-border p-2 text-sm mb-3 text-smv-cream"
-              placeholder="hf_..."
-              value={tokenInput}
-              onChange={(e) => setTokenInput(e.target.value)}
-            />
-            <div className="flex gap-2 justify-end">
-              {getHfToken() && (
-                <PixelButton variant="danger" className="text-[10px]" onClick={() => { clearHfToken(); setTokenOpen(false); }}>
-                  DÉSACTIVER
-                </PixelButton>
-              )}
-              <PixelButton className="text-[10px]" onClick={() => setTokenOpen(false)}>
+            <div className="flex flex-col gap-1.5 mb-4">
+              {(
+                [
+                  ['pollinations', '🌸 Pollinations — gratuit, sans clé (recommandé)'],
+                  ['huggingface', '🤗 Hugging Face — avec token gratuit'],
+                  ['off', '🎨 Décors intégrés uniquement']
+                ] as [AiProvider, string][]
+              ).map(([p, label]) => (
+                <button
+                  key={p}
+                  className={`pixel-btn px-3 py-2 text-[12px] ${aiProvider === p ? '!bg-smv-green' : ''}`}
+                  onClick={() => chooseProvider(p)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {aiProvider === 'huggingface' && (
+              <div className="mb-4">
+                <input
+                  className="w-full bg-pixel-shadow border-2 border-ui-border p-2 text-sm mb-2 text-smv-cream"
+                  placeholder="hf_..."
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <PixelButton
+                    variant="primary"
+                    className="text-[10px]"
+                    disabled={!tokenInput.startsWith('hf_')}
+                    onClick={() => setHfToken(tokenInput.trim())}
+                  >
+                    ENREGISTRER LE TOKEN
+                  </PixelButton>
+                  {getHfToken() && (
+                    <PixelButton variant="danger" className="text-[10px]" onClick={clearHfToken}>
+                      EFFACER
+                    </PixelButton>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <h3 className="font-title text-xs mb-3 text-accent-gold">MUSIQUE</h3>
+            <p className="text-sm mb-2 opacity-80">
+              Par défaut, la musique vient de radios YouTube 24/7 (lofi, synthwave, ambient) — gratuit,
+              sans clé API. Un mini-lecteur ♪ apparaît en bas à droite.
+            </p>
+            <div className="flex flex-col gap-1.5 mb-4">
+              {(
+                [
+                  ['youtube', '📻 Radios YouTube (recommandé)'],
+                  ['local', '💾 Fichiers locaux (/audio/*.mp3)'],
+                  ['off', '🔕 Pas de musique']
+                ] as [MusicSource, string][]
+              ).map(([s, label]) => (
+                <button
+                  key={s}
+                  className={`pixel-btn px-3 py-2 text-[12px] ${audioStore.musicSource === s ? '!bg-smv-green' : ''}`}
+                  onClick={() => audioStore.setMusicSource(s)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end">
+              <PixelButton className="text-[10px]" onClick={() => setSettingsOpen(false)}>
                 FERMER
-              </PixelButton>
-              <PixelButton
-                variant="primary"
-                className="text-[10px]"
-                disabled={!tokenInput.startsWith('hf_')}
-                onClick={() => {
-                  setHfToken(tokenInput.trim());
-                  setTokenOpen(false);
-                }}
-              >
-                ENREGISTRER
               </PixelButton>
             </div>
           </div>

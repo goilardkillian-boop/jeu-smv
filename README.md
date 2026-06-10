@@ -13,24 +13,35 @@ npm run build      # build de production → dist/ (Netlify-ready)
 npm run preview    # prévisualisation du build
 ```
 
-Aucune configuration n'est requise : le jeu est **100% jouable sans token ni réseau** (décors pixel art procéduraux, sprites Canvas, effets sonores synthétisés).
+Aucune configuration n'est requise : décors IA et musique fonctionnent **gratuitement, sans aucune clé API**. Hors-ligne, le jeu reste 100% jouable (décors procéduraux, effets synthétisés).
 
-## Token Hugging Face (optionnel)
+## Décors générés par IA — gratuit, sans clé (Pollinations)
 
-Pour générer les décors en pixel art par IA (`nerijs/pixel-art-xl`) :
+Par défaut, les décors sont générés en pixel art via **[Pollinations.ai](https://pollinations.ai)** —
+API d'images gratuite et sans inscription (simple URL `https://image.pollinations.ai/prompt/...`,
+modèle Flux). Détails de l'intégration (`src/ai/imageGenerator.ts`) :
 
-1. Créer un compte gratuit sur [huggingface.co](https://huggingface.co) et générer un token d'accès.
-2. Soit le renseigner dans l'écran titre (bouton **🎨 ASSETS IA**), soit créer un fichier `.env` :
+- seed stable par décor → toujours la même image, cohérente entre les parties ;
+- cache IndexedDB → chaque décor n'est généré qu'une fois par appareil ;
+- file d'attente côté client (1 requête à la fois, espacées de 6 s) pour respecter le palier
+  anonyme de Pollinations ;
+- en cas d'échec / limite / hors-ligne → repli silencieux sur les décors intégrés.
 
-```
-VITE_HF_TOKEN=hf_xxxxxxxxxxxx
-```
+Alternatives dans l'écran titre (**⚙️ DÉCORS & MUSIQUE**) : Hugging Face avec token gratuit
+(`nerijs/pixel-art-xl`, ou variable `VITE_HF_TOKEN`), ou décors intégrés uniquement.
 
-Les images générées sont mises en cache en IndexedDB (une seule génération par décor).
+## Musique — gratuit, sans clé (YouTube)
 
-## Audio (optionnel)
+Par défaut, la musique vient de **radios YouTube 24/7** via l'IFrame Player API (aucune clé
+requise) : lofi, chillhop, synthwave et dark ambient, mappées sur les 20 pistes du jeu
+(`TRACK_TO_MOOD` dans `src/audio/tracks.ts` — changer un flux = remplacer un ID vidéo).
+Un mini-lecteur ♪ repliable s'affiche en bas à droite (lecteur visible, volume/mute intégrés).
+La lecture démarre au premier clic (politique d'autoplay des navigateurs).
 
-Les pistes sont attendues dans `public/audio/<nom>.mp3` (catalogue complet dans `src/audio/tracks.ts`). En leur absence : musique silencieuse, effets remplacés par une synthèse WebAudio 8-bit discrète. Le jeu reste pleinement jouable.
+Alternatives : fichiers locaux `public/audio/<nom>.mp3` (catalogue dans `src/audio/tracks.ts`),
+ou silence. Les effets sonores utilisent Howler avec repli synthèse WebAudio 8-bit.
+
+> Note : la musique YouTube nécessite une connexion. Hors-ligne, le jeu continue sans musique.
 
 ## Déploiement Netlify
 

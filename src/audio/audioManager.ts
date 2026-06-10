@@ -1,9 +1,27 @@
 import { Howl, Howler } from 'howler';
 import { SYNTH_NOTES } from './tracks';
+import { youtubeMusic } from './youtubePlayer';
 
-// Trois couches : musique (boucle), ambiance, effets ponctuels.
-// Si un fichier /audio/<nom>.mp3 manque, fallback : silence pour la
-// musique, petit bip WebAudio rétro pour les effets connus.
+// Trois couches : musique, ambiance, effets ponctuels.
+// Musique selon la source choisie :
+//   'youtube' (défaut) : radios 24/7 via l'IFrame Player API (gratuit, sans clé)
+//   'local'            : fichiers /audio/<nom>.mp3 via Howler
+//   'off'              : silence
+// Effets : Howler si le mp3 existe, sinon bip WebAudio rétro.
+
+export type MusicSource = 'youtube' | 'local' | 'off';
+const MUSIC_SOURCE_KEY = 'smv_music_source';
+
+export function getMusicSource(): MusicSource {
+  const v = localStorage.getItem(MUSIC_SOURCE_KEY);
+  if (v === 'local' || v === 'off') return v;
+  return 'youtube';
+}
+
+export function setMusicSource(s: MusicSource) {
+  localStorage.setItem(MUSIC_SOURCE_KEY, s);
+}
+
 class AudioManager {
   private music: Howl | null = null;
   private currentTrack: string | null = null;
@@ -17,16 +35,35 @@ class AudioManager {
   setMuted(m: boolean) {
     this.muted = m;
     Howler.mute(m);
+    youtubeMusic.setMuted(m);
   }
 
   setMusicVolume(v: number) {
     this.musicVolume = v;
     this.music?.volume(v);
+    youtubeMusic.setVolume(v * 100);
+  }
+
+  /** Changement de source à chaud : coupe l'ancienne, relance la piste courante. */
+  switchMusicSource(source: MusicSource) {
+    setMusicSource(source);
+    const track = this.currentTrack;
+    this.currentTrack = null;
+    youtubeMusic.stop();
+    this.music?.unload();
+    this.music = null;
+    if (track && source !== 'off') this.playMusic(track);
   }
 
   playMusic(track: string) {
     if (this.currentTrack === track) return;
     this.currentTrack = track;
+    const source = getMusicSource();
+    if (source === 'youtube') {
+      youtubeMusic.playTrack(track);
+      return;
+    }
+    if (source === 'off') return;
     this.music?.fade(this.music.volume() as number, 0, 600);
     const old = this.music;
     setTimeout(() => old?.unload(), 700);
@@ -55,6 +92,7 @@ class AudioManager {
 
   stopMusic() {
     this.currentTrack = null;
+    youtubeMusic.stop();
     this.music?.fade(this.music.volume() as number, 0, 400);
     const old = this.music;
     setTimeout(() => old?.unload(), 500);
