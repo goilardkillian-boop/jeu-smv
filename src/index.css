@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --smv-navy: #1e2b4a;
+  --smv-green: #2d6a2f;
+  --smv-green-light: #4a9e4d;
+  --smv-sand: #c4a35a;
+  --smv-cream: #f2edd7;
+  --smv-red: #c0392b;
+  --pixel-shadow: #0a0f1e;
+  --ui-bg: #12192b;
+  --ui-panel: #1a2540;
+  --ui-border: #3d5a80;
+  --accent-gold: #f0c040;
+  --accent-rust: #8b3a2a;
+  --accent-teal: #2a7a6a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--smv-cream);
+  font-family: 'VT323', monospace;
+  overflow: hidden;
+}
+
+* {
+  image-rendering: pixelated;
+}
+
+canvas {
+  image-rendering: pixelated;
+}
+
+/* ── Cadres pixel art ── */
+.pixel-panel {
+  background: var(--ui-panel);
+  border: 3px solid var(--ui-border);
+  box-shadow:
+    0 0 0 3px var(--pixel-shadow),
+    inset 0 0 0 1px rgba(242, 237, 215, 0.08);
+}
+
+.pixel-btn {
+  font-family: 'Silkscreen', monospace;
+  background: var(--smv-navy);
+  border: 3px solid var(--ui-border);
+  box-shadow: 0 4px 0 var(--pixel-shadow);
+  color: var(--smv-cream);
+  cursor: pointer;
+  transition: none;
+  text-align: left;
+}
+.pixel-btn:hover:not(:disabled) {
+  background: var(--ui-border);
+  border-color: var(--accent-gold);
+}
+.pixel-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--pixel-shadow);
+}
+.pixel-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pixel-btn.primary {
+  background: var(--smv-green);
+}
+.pixel-btn.primary:hover:not(:disabled) {
+  background: var(--smv-green-light);
+}
+.pixel-btn.danger {
+  background: var(--accent-rust);
+}
+
+/* ── Texte machine à écrire ── */
+.dialogue-text {
+  font-size: 1.35rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+}
+
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.cursor-blink {
+  animation: blink 0.9s infinite;
+}
+
+/* ── Effet CRT ── */
+.crt-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(10, 15, 30, 0.12) 0px,
+    rgba(10, 15, 30, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.crt-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(10, 15, 30, 0.55) 100%);
+}
+
+/* ── Pluie ── */
+@keyframes rainfall {
+  from { transform: translateY(-110%); }
+  to { transform: translateY(110vh); }
+}
+.rain-drop {
+  position: absolute;
+  width: 2px;
+  height: 14px;
+  background: rgba(180, 200, 230, 0.35);
+  animation: rainfall linear infinite;
+}
+
+/* ── Transitions de scène ── */
+@keyframes fadeInScene {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.scene-enter {
+  animation: fadeInScene 0.45s ease both;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-up {
+  animation: slideUp 0.25s ease both;
+}
+
+@keyframes notifPop {
+  0% { transform: translateY(12px); opacity: 0; }
+  12% { transform: translateY(0); opacity: 1; }
+  88% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(8px); opacity: 0; }
+}
+.notif-pop {
+  animation: notifPop 3s ease both;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.screen-shake {
+  animation: shake 0.4s ease;
+}
+
+/* Cercle de choix sous pression */
+@keyframes timerShrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+.timer-bar {
+  height: 6px;
+  background: var(--smv-red);
+  animation: timerShrink 8s linear both;
+}
+
+/* Jauges */
+.gauge-track {
+  background: var(--pixel-shadow);
+  border: 2px solid var(--ui-border);
+  height: 14px;
+}
+.gauge-fill {
+  height: 100%;
+  transition: width 0.6s steps(12);
+}
+
+/* Scrollbars pixel */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--pixel-shadow);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ui-border);
+  border: 2px solid var(--pixel-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-enter,
+  .slide-up,
+  .screen-shake {
+    animation: none;
+  }
+}
