@@ -24,7 +24,11 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        // Les assets utilisateur (décors, sprites, audio) ne sont jamais précachés :
+        // un fichier lourd déposé dans public/ ne doit pas casser le build.
+        globIgnores: ['**/images/**', '**/audio/**'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
@@ -32,6 +36,15 @@ export default defineConfig({
             options: {
               cacheName: 'google-fonts',
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 }
+            }
+          },
+          {
+            // Décors, sprites et audio fournis : cache au premier usage (offline ensuite)
+            urlPattern: /\/(images|audio)\/.*\.(png|jpg|webp|mp3|ogg)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-assets',
+              expiration: { maxEntries: 150, maxAgeSeconds: 60 * 60 * 24 * 365 }
             }
           }
         ]
