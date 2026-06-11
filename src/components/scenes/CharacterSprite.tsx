@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ExpressionKey, NpcKey, SpriteConfig } from '../../engine/types';
 import { drawSprite } from '../../engine/spriteBuilder';
 
@@ -25,18 +25,66 @@ interface Props {
   className?: string;
 }
 
+// Sprites PNJ fournis par l'utilisateur (public/images/sprites/).
+// Priorité : <pnj>_<expression>.png > <pnj>.png > sprite Canvas intégré.
+const spriteProbeCache = new Map<string, Promise<string | null>>();
+
+function probeImage(url: string): Promise<string | null> {
+  let p = spriteProbeCache.get(url);
+  if (!p) {
+    p = new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+    spriteProbeCache.set(url, p);
+  }
+  return p;
+}
+
+async function probeNpcSprite(npc: NpcKey, expression: ExpressionKey): Promise<string | null> {
+  return (
+    (await probeImage(`/images/sprites/${npc}_${expression}.png`)) ??
+    (await probeImage(`/images/sprites/${npc}.png`))
+  );
+}
+
 export function CharacterSprite({ config, npc, expression, scale = 2, className = '' }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const [localUrl, setLocalUrl] = useState<string | null>(null);
 
   const spriteConfig: SpriteConfig | null = config ?? (npc ? { ...NPC_SPRITES[npc], expression: expression ?? NPC_SPRITES[npc].expression } : null);
 
   useEffect(() => {
+    setLocalUrl(null);
+    if (!npc || config) return; // le sprite joueur reste dessiné en Canvas (dynamique)
+    let alive = true;
+    void probeNpcSprite(npc, expression ?? NPC_SPRITES[npc].expression).then((url) => {
+      if (alive && url) setLocalUrl(url);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [npc, expression, config]);
+
+  useEffect(() => {
     const ctx = ref.current?.getContext('2d');
-    if (!ctx || !spriteConfig) return;
+    if (!ctx || !spriteConfig || localUrl) return;
     drawSprite(ctx, spriteConfig);
-  }, [JSON.stringify(spriteConfig)]);
+  }, [JSON.stringify(spriteConfig), localUrl]);
 
   if (!spriteConfig) return null;
+  if (localUrl) {
+    return (
+      <img
+        src={localUrl}
+        alt=""
+        className={className}
+        style={{ width: 96 * scale, height: 128 * scale, imageRendering: 'pixelated', objectFit: 'contain' }}
+      />
+    );
+  }
   return (
     <canvas
       ref={ref}
