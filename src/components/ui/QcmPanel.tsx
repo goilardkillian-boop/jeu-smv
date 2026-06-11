@@ -66,12 +66,14 @@ export function QcmPanel({ qcm, onFinish }: Props) {
       <p className="dialogue-text mb-3">{q.question}</p>
       <div className="flex flex-col gap-2">
         {q.options.map((opt, i) => {
-          let cls = 'pixel-btn px-3 py-2 text-[13px] w-full';
-          if (answered && i === q.correct) cls += ' !bg-smv-green';
-          else if (answered && i === selected) cls += ' !bg-smv-red';
+          let cls = 'choice-btn w-full';
+          if (answered && i === q.correct) cls += ' !bg-smv-green !border-smv-green-light';
+          else if (answered && i === selected) cls += ' !bg-smv-red !border-smv-red';
+          else if (answered) cls += ' opacity-50';
           return (
             <button key={i} className={cls} onClick={() => submit(i)} disabled={answered}>
-              {String.fromCharCode(65 + i)}. {opt}
+              <span className="choice-key">{String.fromCharCode(65 + i)}</span>
+              {opt}
             </button>
           );
         })}

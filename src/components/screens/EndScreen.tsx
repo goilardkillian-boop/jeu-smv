@@ -25,7 +25,7 @@ export function EndScreen({ onReplay }: { onReplay: () => void }) {
               {ending.title.toUpperCase()}
             </h1>
           </div>
-          <DialogueBox text={ending.text} speed={20} />
+          <DialogueBox text={ending.text} />
           {ending.cta && (
             <div className="pixel-panel p-3 mt-3 text-center">
               <p className="text-sm mb-1">{ending.cta}</p>

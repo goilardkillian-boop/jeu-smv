@@ -6,6 +6,7 @@ import { PixelBackground } from '../scenes/PixelBackground';
 import { RainEffect } from '../effects/RainEffect';
 import { getAiProvider, setAiProvider, getHfToken, setHfToken, clearHfToken, type AiProvider } from '../../ai/imageGenerator';
 import { audio, type MusicSource } from '../../audio/audioManager';
+import { getTextSpeed, setTextSpeed, type TextSpeed } from '../ui/DialogueBox';
 
 export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
   const store = useGameStore();
@@ -14,6 +15,7 @@ export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tokenInput, setTokenInput] = useState('');
   const [aiProvider, setAiProviderState] = useState<AiProvider>(getAiProvider());
+  const [textSpeed, setTextSpeedState] = useState<TextSpeed>(getTextSpeed());
 
   useEffect(() => {
     void store.checkHasSave();
@@ -62,9 +64,10 @@ export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
       <RainEffect />
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4">
         <div className="text-center mb-10">
-          <h1 className="font-title text-accent-gold text-xl sm:text-3xl leading-relaxed drop-shadow-[3px_3px_0_var(--pixel-shadow)]">
+          <h1 className="font-title text-accent-gold text-xl sm:text-3xl leading-relaxed game-title title-glow">
             UNE VIE À<br />CONSTRUIRE
           </h1>
+          <div className="mx-auto mt-3 h-0.5 w-40 bg-accent-gold/60" />
           <p className="font-ui text-xs mt-3 opacity-80">3e Régiment du Service Militaire Volontaire · La Rochelle</p>
         </div>
         <div className="flex flex-col gap-3 w-64">
@@ -159,6 +162,29 @@ export function TitleScreen({ onNewGame }: { onNewGame: () => void }) {
                   key={s}
                   className={`pixel-btn px-3 py-2 text-[12px] ${audioStore.musicSource === s ? '!bg-smv-green' : ''}`}
                   onClick={() => audioStore.setMusicSource(s)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <h3 className="font-title text-xs mb-3 text-accent-gold">VITESSE DU TEXTE</h3>
+            <div className="flex gap-1.5 mb-4 flex-wrap">
+              {(
+                [
+                  ['lent', 'Lent'],
+                  ['normal', 'Normal'],
+                  ['rapide', 'Rapide'],
+                  ['instant', 'Instantané']
+                ] as [TextSpeed, string][]
+              ).map(([s, label]) => (
+                <button
+                  key={s}
+                  className={`pixel-btn px-3 py-2 text-[11px] ${textSpeed === s ? '!bg-smv-green' : ''}`}
+                  onClick={() => {
+                    setTextSpeed(s);
+                    setTextSpeedState(s);
+                  }}
                 >
                   {label}
                 </button>
