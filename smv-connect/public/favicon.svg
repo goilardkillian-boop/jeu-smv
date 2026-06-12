@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M32 2 56 10v22c0 14-10 25-24 30C18 57 8 46 8 32V10Z" fill="#2D3E73"/>
+  <path d="M32 8 50 14v18c0 11-7.6 19.6-18 24-10.4-4.4-18-13-18-24V14Z" fill="#1E2A52"/>
+  <path d="m20 30 12 9 12-9v8L32 47 20 38Z" fill="#3DA435"/>
+  <text x="32" y="27" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">SMV</text>
+</svg>
