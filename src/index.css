@@ -12,6 +12,7 @@
   --pixel-shadow: #0a0f1e;
   --ui-bg: #12192b;
   --ui-panel: #1a2540;
+  --ui-panel-2: #20304f;
   --ui-border: #3d5a80;
   --accent-gold: #f0c040;
   --accent-rust: #8b3a2a;
@@ -27,6 +28,7 @@ body,
   color: var(--smv-cream);
   font-family: 'VT323', monospace;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 * {
@@ -37,32 +39,70 @@ canvas {
   image-rendering: pixelated;
 }
 
-/* ── Cadres pixel art ── */
+/* ── Cadres pixel art (double bordure : sombre dehors, claire dedans) ── */
 .pixel-panel {
-  background: var(--ui-panel);
-  border: 3px solid var(--ui-border);
+  background: linear-gradient(180deg, var(--ui-panel-2) 0%, var(--ui-panel) 100%);
+  border: 2px solid var(--ui-border);
   box-shadow:
-    0 0 0 3px var(--pixel-shadow),
-    inset 0 0 0 1px rgba(242, 237, 215, 0.08);
+    0 0 0 2px var(--pixel-shadow),
+    inset 0 2px 0 rgba(242, 237, 215, 0.07),
+    0 6px 14px rgba(10, 15, 30, 0.5);
+}
+
+/* Boîte de dialogue : translucide pour laisser respirer le décor */
+.dialogue-panel {
+  background: linear-gradient(180deg, rgba(26, 37, 64, 0.94) 0%, rgba(18, 25, 43, 0.96) 100%);
+  border: 2px solid var(--ui-border);
+  box-shadow:
+    0 0 0 2px var(--pixel-shadow),
+    inset 0 2px 0 rgba(242, 237, 215, 0.06);
+  backdrop-filter: blur(2px);
+}
+
+/* Chip du nom du locuteur, à cheval sur la boîte */
+.speaker-chip {
+  display: inline-block;
+  background: var(--smv-navy);
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--pixel-shadow);
+  color: var(--accent-gold);
+  font-family: 'Silkscreen', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  text-transform: uppercase;
 }
 
 .pixel-btn {
   font-family: 'Silkscreen', monospace;
   background: var(--smv-navy);
-  border: 3px solid var(--ui-border);
-  box-shadow: 0 4px 0 var(--pixel-shadow);
+  border: 2px solid var(--ui-border);
+  box-shadow:
+    0 0 0 2px var(--pixel-shadow),
+    0 4px 0 var(--pixel-shadow);
   color: var(--smv-cream);
   cursor: pointer;
-  transition: none;
   text-align: left;
+  min-height: 44px; /* cible tactile minimale */
+  transition: background 80ms steps(2);
 }
-.pixel-btn:hover:not(:disabled) {
+.pixel-btn:hover:not(:disabled),
+.pixel-btn:focus-visible {
   background: var(--ui-border);
   border-color: var(--accent-gold);
+  outline: none;
+}
+.pixel-btn:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--pixel-shadow),
+    0 4px 0 var(--pixel-shadow),
+    0 0 0 4px rgba(240, 192, 64, 0.4);
 }
 .pixel-btn:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--pixel-shadow);
+  box-shadow:
+    0 0 0 2px var(--pixel-shadow),
+    0 1px 0 var(--pixel-shadow);
 }
 .pixel-btn:disabled {
   opacity: 0.45;
@@ -77,12 +117,65 @@ canvas {
 .pixel-btn.danger {
   background: var(--accent-rust);
 }
+.pixel-btn.compact {
+  min-height: 0;
+}
 
-/* ── Texte machine à écrire ── */
+/* Bouton de choix narratif */
+.choice-btn {
+  font-family: 'VT323', monospace;
+  font-size: 19px;
+  line-height: 1.25;
+  background: linear-gradient(180deg, rgba(30, 43, 74, 0.96), rgba(18, 25, 43, 0.96));
+  border: 2px solid var(--ui-border);
+  box-shadow: 0 0 0 2px var(--pixel-shadow);
+  color: var(--smv-cream);
+  cursor: pointer;
+  text-align: left;
+  padding: 10px 14px 10px 34px;
+  position: relative;
+  min-height: 44px;
+  transition: transform 80ms steps(2), border-color 80ms steps(2);
+}
+.choice-btn::before {
+  content: '▸';
+  position: absolute;
+  left: 12px;
+  color: var(--accent-gold);
+  opacity: 0;
+  transition: opacity 80ms steps(2);
+}
+.choice-btn:hover,
+.choice-btn:focus-visible {
+  border-color: var(--accent-gold);
+  transform: translateX(4px);
+  outline: none;
+}
+.choice-btn:hover::before,
+.choice-btn:focus-visible::before {
+  opacity: 1;
+}
+.choice-btn .choice-key {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+  opacity: 0.45;
+}
+.choice-btn:hover .choice-key,
+.choice-btn:focus-visible .choice-key {
+  opacity: 0;
+}
+
+/* ── Texte de dialogue : lisibilité d'abord (≥ 20px, interligne aéré) ── */
 .dialogue-text {
-  font-size: 1.35rem;
-  line-height: 1.35;
+  font-size: clamp(20px, 2.6vh, 24px);
+  line-height: 1.4;
   white-space: pre-wrap;
+  text-shadow: 1px 1px 0 rgba(10, 15, 30, 0.8);
+  max-width: 62ch; /* longueur de ligne confortable */
 }
 
 @keyframes blink {
@@ -91,6 +184,47 @@ canvas {
 }
 .cursor-blink {
   animation: blink 0.9s infinite;
+}
+
+/* Indicateur « cliquer pour continuer » (CTC) */
+@keyframes ctcBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+.ctc-indicator {
+  animation: ctcBounce 0.8s steps(2) infinite;
+  color: var(--accent-gold);
+  text-shadow: 1px 1px 0 var(--pixel-shadow);
+}
+
+/* ── HUD : pastilles de jauges compactes ── */
+.hud-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(18, 25, 43, 0.85);
+  border: 2px solid var(--ui-border);
+  box-shadow: 0 0 0 1px var(--pixel-shadow);
+  padding: 3px 7px;
+  font-family: 'Silkscreen', monospace;
+  font-size: 9px;
+}
+.hud-pill .bar {
+  width: 40px;
+  height: 7px;
+  background: var(--pixel-shadow);
+  border: 1px solid var(--ui-border);
+}
+.hud-pill .bar > div {
+  height: 100%;
+  transition: width 0.6s steps(10);
+}
+@keyframes pulseDanger {
+  0%, 100% { border-color: var(--ui-border); }
+  50% { border-color: var(--smv-red); }
+}
+.hud-pill.danger {
+  animation: pulseDanger 1s steps(2) infinite;
 }
 
 /* ── Effet CRT ── */
@@ -144,6 +278,25 @@ canvas {
   animation: slideUp 0.25s ease both;
 }
 
+/* Entrée d'un sprite de personnage */
+@keyframes spriteEnter {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.sprite-enter {
+  animation: spriteEnter 0.35s ease both;
+}
+
+/* Dégradé de lisibilité derrière la zone de dialogue */
+.bottom-vignette {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 55%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(10, 15, 30, 0.55) 70%, rgba(10, 15, 30, 0.75) 100%);
+}
+
 @keyframes notifPop {
   0% { transform: translateY(12px); opacity: 0; }
   12% { transform: translateY(0); opacity: 1; }
@@ -165,18 +318,18 @@ canvas {
   animation: shake 0.4s ease;
 }
 
-/* Cercle de choix sous pression */
+/* Barre de temps des choix sous pression */
 @keyframes timerShrink {
   from { width: 100%; }
   to { width: 0%; }
 }
 .timer-bar {
   height: 6px;
-  background: var(--smv-red);
+  background: linear-gradient(90deg, var(--smv-red), var(--accent-gold));
   animation: timerShrink 8s linear both;
 }
 
-/* Jauges */
+/* Jauges (panneaux) */
 .gauge-track {
   background: var(--pixel-shadow);
   border: 2px solid var(--ui-border);
@@ -185,6 +338,32 @@ canvas {
 .gauge-fill {
   height: 100%;
   transition: width 0.6s steps(12);
+}
+
+/* Titre du jeu */
+.game-title {
+  text-shadow:
+    3px 3px 0 var(--pixel-shadow),
+    6px 6px 0 rgba(10, 15, 30, 0.4);
+}
+@keyframes titleGlow {
+  0%, 100% { text-shadow: 3px 3px 0 var(--pixel-shadow), 0 0 18px rgba(240, 192, 64, 0.25); }
+  50% { text-shadow: 3px 3px 0 var(--pixel-shadow), 0 0 30px rgba(240, 192, 64, 0.45); }
+}
+.title-glow {
+  animation: titleGlow 3.2s ease-in-out infinite;
+}
+
+/* Backlog (historique des dialogues) */
+.backlog-entry {
+  border-left: 3px solid var(--ui-border);
+  padding-left: 10px;
+}
+.backlog-entry .who {
+  font-family: 'Silkscreen', monospace;
+  font-size: 10px;
+  color: var(--accent-gold);
+  text-transform: uppercase;
 }
 
 /* Scrollbars pixel */
@@ -202,7 +381,10 @@ canvas {
 @media (prefers-reduced-motion: reduce) {
   .scene-enter,
   .slide-up,
-  .screen-shake {
+  .screen-shake,
+  .sprite-enter,
+  .ctc-indicator,
+  .title-glow {
     animation: none;
   }
 }

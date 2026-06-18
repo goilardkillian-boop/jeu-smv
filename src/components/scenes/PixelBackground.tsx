@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { generateBackground, getHfToken } from '../../ai/imageGenerator';
+import { generateBackground, aiEnabled } from '../../ai/imageGenerator';
 
 // Décors procéduraux pixel art (fallback sans token Hugging Face).
 // Chaque scène est dessinée en 160×90 puis upscalée en CSS (pixelated).
@@ -171,21 +171,47 @@ interface Props {
   backgroundKey: string;
 }
 
+// Détection des décors fournis par l'utilisateur (public/images/backgrounds/<clé>.png).
+// Priorité : fichier local > génération IA > décor procédural. Résultat mémorisé.
+const localProbeCache = new Map<string, Promise<string | null>>();
+
+function probeLocalBackground(key: string): Promise<string | null> {
+  let p = localProbeCache.get(key);
+  if (!p) {
+    p = new Promise((resolve) => {
+      const url = `/images/backgrounds/${key}.png`;
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+    localProbeCache.set(key, p);
+  }
+  return p;
+}
+
 export function PixelBackground({ backgroundKey }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [aiUrl, setAiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setAiUrl(null);
-    if (getHfToken()) {
-      let alive = true;
-      void generateBackground(backgroundKey).then((url) => {
-        if (alive && url) setAiUrl(url);
-      });
-      return () => {
-        alive = false;
-      };
-    }
+    let alive = true;
+    void probeLocalBackground(backgroundKey).then((localUrl) => {
+      if (!alive) return;
+      if (localUrl) {
+        setAiUrl(localUrl);
+        return;
+      }
+      if (aiEnabled()) {
+        void generateBackground(backgroundKey).then((url) => {
+          if (alive && url) setAiUrl(url);
+        });
+      }
+    });
+    return () => {
+      alive = false;
+    };
   }, [backgroundKey]);
 
   useEffect(() => {

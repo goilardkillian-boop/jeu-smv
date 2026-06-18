@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ */
+/* Design System SMV — variables CSS                                    */
+/* ------------------------------------------------------------------ */
+:root {
+  /* Couleurs primaires SMV */
+  --smv-navy: #2d3e73; /* Bleu marine institutionnel */
+  --smv-navy-dark: #1e2a52; /* Survol / états actifs */
+  --smv-green: #3da435; /* Vert accent (insertion/succès) */
+  --smv-green-light: #b8d584; /* Vert clair (badges, tags) */
+  --smv-red: #c1272d; /* Rouge République */
+
+  /* Neutres */
+  --smv-white: #ffffff;
+  --smv-off-white: #f5f5f0;
+  --smv-gray-100: #f0f0f0;
+  --smv-gray-300: #cccccc;
+  --smv-gray-600: #666666;
+  --smv-gray-900: #1a1a1a;
+
+  /* Typographie */
+  --font-display: 'Barlow Condensed', sans-serif; /* Titres, headings */
+  --font-body: 'Marianne', 'Source Sans Pro', sans-serif; /* Corps, DSFR */
+
+  /* Espacements */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--smv-gray-900);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Focus visible homogène (navigation clavier — RGAA) */
+  :focus-visible {
+    outline: 2px solid var(--smv-navy);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Fond de hero généré en CSS (aucune ressource externe)               */
+/* ------------------------------------------------------------------ */
+.hero-fond {
+  background-color: var(--smv-navy-dark);
+  background-image:
+    linear-gradient(115deg, transparent 0 42%, rgba(61, 164, 53, 0.32) 42% 47%, transparent 47% 55%, rgba(184, 213, 132, 0.16) 55% 58%, transparent 58%),
+    linear-gradient(295deg, transparent 0 30%, rgba(45, 62, 115, 0.85) 30% 60%, transparent 60%),
+    radial-gradient(circle at 80% 15%, rgba(184, 213, 132, 0.2), transparent 45%),
+    linear-gradient(180deg, #1e2a52 0%, #2d3e73 60%, #27406b 100%);
+}
+
+/* ------------------------------------------------------------------ */
+/* Leaflet — marqueurs et popups aux couleurs SMV                      */
+/* ------------------------------------------------------------------ */
+.smv-marqueur {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(30, 42, 82, 0.25);
+}
+
+.leaflet-popup-content {
+  margin: 14px 16px;
+  font-family: var(--font-body);
+}
+
+.smv-popup .smv-popup-nom {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--smv-navy);
+}
+
+.smv-popup .smv-popup-meta {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--smv-gray-600);
+}
+
+.smv-popup .smv-popup-ligne {
+  margin-top: 6px;
+  font-size: 0.8rem;
+}
+
+.smv-popup .smv-popup-ligne a {
+  color: var(--smv-navy);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.smv-popup .smv-popup-cta {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  background: var(--smv-green);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 0.8rem;
+}
+
+.smv-popup .smv-popup-cta:hover {
+  background: #338a2c;
+}
